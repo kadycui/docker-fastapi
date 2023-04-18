@@ -1,0 +1,54 @@
+version: '3'
+services:
+  web:
+    build:
+      context: ./api
+    volumes:
+      - ./logs:/code/logs
+    
+    depends_on:
+      - redis
+      - mysql
+
+    ports:
+      - "5006:5006"
+    expose:
+      - 5006
+    environment:
+      - REDIS_HOST=redis_db
+    networks:
+      - fast
+  mysql:
+    image: mysql:5.7
+    container_name: mysql_db
+    restart: always
+    volumes:
+      - ./config/mysql/data:/var/lib/mysql
+      - ./config/mysql/conf/mysql.cnf:/etc/mysql/mysql.conf.d/mysqld.cnf
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: 123456
+    expose:
+      - 3306
+    networks:
+      - fast
+
+  redis:
+    image: redis
+    container_name: redis_db
+    volumes:
+      - ./config/redis/datadir:/data
+      - ./config/redis/conf/redis.conf:/usr/local/etc/redis/redis.conf
+      - ./config/redis/logs:/logs
+    restart: always
+    ports:
+      - "6379:6379"
+    expose:
+      - 6379
+    networks:
+      - fast
+
+networks:
+  fast:
+    driver: bridge
